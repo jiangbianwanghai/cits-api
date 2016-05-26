@@ -1,12 +1,12 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 /**
- * 日志接口
+ * 订阅接口
  */
-class Handle extends CI_Controller {
+class Subscription extends CI_Controller {
 
 	/**
-	 * 日志写入
+	 * 订阅写入
 	 */
 	public function write()
 	{
@@ -14,29 +14,25 @@ class Handle extends CI_Controller {
 		if (empty($_POST)) {
 			exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
 		}
-		
+
 		//验证输入
 		$this->load->library('form_validation');
-		$this->form_validation->set_rules('sender', '发送者', 'trim|required|is_natural_no_zero');
-		$this->form_validation->set_rules('action', '动作', 'trim|required');
-		$this->form_validation->set_rules('target_type', '目标类型', 'trim|required|is_natural_no_zero|max_length[1]');
 		$this->form_validation->set_rules('target', '目标ID', 'trim|required|is_natural_no_zero');
-		$this->form_validation->set_rules('type', '日志类型', 'trim|required|is_natural_no_zero|max_length[1]');
+		$this->form_validation->set_rules('target_type', '目标类型', 'trim|required|is_natural_no_zero|max_length[1]');
+		$this->form_validation->set_rules('user', '用户ID', 'trim|required|is_natural_no_zero');
 		if ($this->form_validation->run() == FALSE) {
 			exit(json_encode(array('status' => false, 'error' => validation_errors())));
 		}
 
 		//写入数据
-		$this->load->model('Model_logs', 'logs', TRUE);
+		$this->load->model('Model_subscription', 'subscription', TRUE);
 		$Post_data = array(
-			'sender' => $this->input->post('sender'),
-			'action' => $this->input->post('action'),
-			'target_type' => $this->input->post('target_type'),
 			'target' => $this->input->post('target'),
-			'type' => $this->input->post('type'),
+			'target_type' => $this->input->post('target_type'),
+			'user' => $this->input->post('user'),
 			'add_time' => time(),
 		);
-		$id = $this->logs->add($Post_data);
+		$id = $this->subscription->add($Post_data);
 		if ($id) {
 			exit(json_encode(array('status' => true, 'data' => $id)));
 		} else {
