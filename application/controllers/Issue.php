@@ -19,7 +19,7 @@ class Issue extends CI_Controller {
 		$this->load->library('form_validation');
 		$this->form_validation->set_rules('project_id', '所属项目团队ID', 'trim|required|is_natural_no_zero');
 		$this->form_validation->set_rules('plan_id', '所属计划ID', 'trim|required|is_natural_no_zero');
-		$this->form_validation->set_rules('type', '目标类型', 'trim|required|is_natural_no_zero|max_length[1]');
+		$this->form_validation->set_rules('type', '类型', 'trim|required|is_natural_no_zero|max_length[1]');
 		$this->form_validation->set_rules('level', '优先级', 'trim|required|is_natural_no_zero|max_length[1]');
 		$this->form_validation->set_rules('issue_name', '任务标题', 'trim|required');
 		$this->form_validation->set_rules('issue_summary', '任务详情', 'trim');
