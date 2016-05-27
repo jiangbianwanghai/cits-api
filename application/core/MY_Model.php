@@ -77,29 +77,20 @@ class MY_Model extends CI_Model {
      * @param  string $order 排序方式
      * @return array | false
      */
-    public function fetchOne($field = array(), $where = '', $order = '')
+    public function fetchOne($field = array(), $where = array())
     {
-        $result = false;
+        $customDB = $this->load->database($this->dbgroup, TRUE);
         if ($field)
             $fieldStr = "`".implode("`,`", $field)."`";
         else
             $fieldStr = "*";
-        if ($where)
-            $whereStr = "WHERE ".$where;
-        else
-            $whereStr = null;
-        if ($order)
-            $orderStr = "ORDER BY ".$order;
-        else
-            $orderStr = null;
-        $sql = "SELECT {$fieldStr} FROM `{$this->table}` {$whereStr} {$orderStr} LIMIT 1";
-        $customDB = $this->load->database($this->dbgroup, TRUE);
-        $query = $customDB->query($sql);
-        $customDB->close();
-        if ($query->num_rows() > 0) {
-            return $query->row_array();
+        $customDB->select($fieldStr);
+        if ($where) {
+            $customDB->where($where);
         }
-        return $result;
+        $query = $customDB->get($this->table);
+        $customDB->close();
+        return $query->row_array();
     }
 
     /**
