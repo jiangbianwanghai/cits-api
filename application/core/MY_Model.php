@@ -42,32 +42,25 @@ class MY_Model extends CI_Model {
      * @param  integer $limit 步长
      * @return array | false
      */
-    public function fetchAll($field = array(), $where = '', $order = '', $offset = 0, $limit = 5)
+    public function get_rows($field = array(), $where = array(), $order = array(), $offset = 0, $limit = 5)
     {
-        $result = false;
+        $customDB = $this->load->database($this->dbgroup, TRUE);
         if ($field)
             $fieldStr = "`".implode("`,`", $field)."`";
         else
             $fieldStr = "*";
-        if ($where)
-            $whereStr = " WHERE ".$where;
-        else
-            $whereStr = null;
-        if ($order)
-            $orderStr = " ORDER BY ".$order;
-        else
-            $orderStr = null;
-        $sql = "SELECT ".$fieldStr." FROM `".$this->table."`".$whereStr.$orderStr." LIMIT ".$offset.",".$limit;
-        //echo $sql."\n";
-        $customDB = $this->load->database($this->dbgroup, TRUE);
-        $query = $customDB->query($sql);
-        $customDB->close();
-        if ($query->num_rows() > 0) {
-            foreach ($query->result_array() as $row) {
-                $result[] = $row;
+        $customDB->select($fieldStr);
+        if ($where) {
+            $customDB->where($where);
+        }
+        if ($order) {
+            foreach ($order as $key => $value) {
+                $customDB->order_by($key, $value);
             }
         }
-        return $result;
+        $query = $customDB->get($this->table);
+        $customDB->close();
+        return $query->result_array();
     }
 
     /**

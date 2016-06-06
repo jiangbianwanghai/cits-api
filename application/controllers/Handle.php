@@ -1,12 +1,44 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+
 /**
  * 日志接口
+ *
+ * 提供操作日志的写入和查询功能
+ *
+ * @author jiangbianwanghai <webmaster@jiangbianwanghai.com>
+ * @since 0.1
  */
 class Handle extends CI_Controller {
 
 	/**
 	 * 日志写入
+	 *
+	 * 此方法只接受POST传值，并对传值进行有效性验证.
+	 *
+	 * 传值
+	 *
+	 * ```
+     * sender: 发送者 [必填]
+     * action: 动作 [必填]
+     * target_type: 目标类型 [必填]
+     * target: 目标ID [必填]
+     * type: 日志类型 [必填]
+     * ```
+	 *
+	 * 错误提示：
+	 *
+	 * ```
+     * {"status":false,"error":"错误信息内容"}
+     * ```
+     *
+	 * 成功提示：
+	 *
+	 * ```
+     * {"status":true,"data":记录ID}
+     * ```
+     *
+	 * @return string 成功返回记录ID，错误返回错误信息。
 	 */
 	public function write()
 	{
