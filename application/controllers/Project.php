@@ -77,7 +77,26 @@ class Project extends CI_Controller {
 	public function cache()
 	{
 		$this->load->model('Model_project', 'project', TRUE);
-		$rows = $this->project->get_rows(array('id', 'project_name', 'add_user', 'add_time'));
+		$rows = $this->project->get_rows(array('id', 'project_name', 'add_user', 'add_time'), array(), array('id' => 'desc'), 100);
+		if ($rows) {
+			exit(json_encode(array('status' => true, 'data' => $rows)));
+		} else {
+			exit(json_encode(array('status' => false, 'data' => '')));
+		}
+	}
+
+	/**
+	 * 输出项目团队列表信息
+	 */
+	public function rows()
+	{
+		$where = array();
+		$uid = $this->input->get('uid');
+		if ($uid) {
+			$where = array('add_user' => $uid);
+		}
+		$this->load->model('Model_project', 'project', TRUE);
+		$rows = $this->project->get_rows(array('id', 'project_name', 'project_discription', 'add_user', 'add_time', 'last_user', 'last_time'), $where, array('id' => 'desc'), 100);
 		if ($rows) {
 			exit(json_encode(array('status' => true, 'data' => $rows)));
 		} else {

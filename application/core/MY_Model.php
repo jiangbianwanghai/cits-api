@@ -42,7 +42,7 @@ class MY_Model extends CI_Model {
      * @param  integer $limit 步长
      * @return array | false
      */
-    public function get_rows($field = array(), $where = array(), $order = array(), $offset = 0, $limit = 5)
+    public function get_rows($field = array(), $where = array(), $order = array(), $limit = 20, $offset = 0)
     {
         $customDB = $this->load->database($this->dbgroup, TRUE);
         if ($field)
@@ -58,6 +58,7 @@ class MY_Model extends CI_Model {
                 $customDB->order_by($key, $value);
             }
         }
+        $this->db->limit($limit, $offset);
         $query = $customDB->get($this->table);
         $customDB->close();
         return $query->result_array();
@@ -116,11 +117,11 @@ class MY_Model extends CI_Model {
      * @param  int $id   主键id
      * @return true|false
      */
-    public function updateById($data, $id)
+    public function update_by_where($data, $where)
     {
         $result = false;
         $customDB = $this->load->database($this->dbgroup, TRUE);
-        $result = $customDB->update($this->table, $data, array($this->primary=>$id));
+        $result = $customDB->update($this->table, $data, $where);
         $customDB->close();
         return $result;
     }

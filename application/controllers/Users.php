@@ -135,4 +135,115 @@ class Users extends CI_Controller {
         	exit(json_encode(array('status' => false, 'error' => '记录不存在')));
         }
 	}
+
+    /**
+     * 添加收藏项目团队
+     */
+    public function star_project_add()
+    {
+
+        //验证请求的方式
+        if (empty($_POST)) {
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+        }
+
+        $id = $this->input->post('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            exit(json_encode(array('status' => false, 'error' => '项目ID格式错误')));
+        }
+
+        $uid = $this->input->post('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        $this->load->model('Model_users', 'users', TRUE);
+        $row = $this->users->fetchOne(array('star_project'), array('uid' => $uid));
+        if (!$row) {
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+        if ($row['star_project']) {
+            $star_project = unserialize($row['star_project']);
+            if (in_array($id, $star_project)) {
+                exit(json_encode(array('status' => false, 'error' => '已经收藏')));
+            }
+        }
+        $star_project[] = $id;
+        $star_project = serialize($star_project);
+        $flag = $this->users->update_by_where(array('star_project'=>$star_project), array('uid' => $uid));
+        if ($flag) {
+            exit(json_encode(array('status' => true, 'data' => $star_project)));
+        } else {
+            exit(json_encode(array('status' => false, 'error' => '操作失败')));
+        }
+    }
+
+    /**
+     * 删除收藏项目团队
+     */
+    public function star_project_del()
+    {
+
+        //验证请求的方式
+        if (empty($_POST)) {
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+        }
+
+        $id = $this->input->post('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            exit(json_encode(array('status' => false, 'error' => '项目ID格式错误')));
+        }
+
+        $uid = $this->input->post('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        $this->load->model('Model_users', 'users', TRUE);
+        $row = $this->users->fetchOne(array('star_project'), array('uid' => $uid));
+        if (!$row) {
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+        if ($row['star_project']) {
+            $star_project = unserialize($row['star_project']);
+            $key = array_keys($star_project, $id, true);
+            unset($star_project[array_search($id, $star_project)]);
+            if ($star_project) {
+                $star_project = serialize($star_project);
+            } else {
+                $star_project = '';
+            }
+            $flag = $this->users->update_by_where(array('star_project'=>$star_project), array('uid' => $uid));
+            if ($flag) {
+                exit(json_encode(array('status' => true, 'data' => $star_project)));
+            } else {
+                exit(json_encode(array('status' => false, 'error' => '操作失败')));
+            }
+        }
+    }
+
+    /**
+     * 输出单条信息
+     */
+    public function row()
+    {
+        //验证请求的方式
+        if (empty($_GET)) {
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET')));
+        }
+
+        $uid = $this->input->get('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        $this->load->model('Model_users', 'users', TRUE);
+        $row = $this->users->fetchOne(array(), array('uid' => $uid));
+        if (!$row) {
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+
+        exit(json_encode(array('status' => true, 'data' => $row)));
+
+    }
 }
