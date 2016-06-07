@@ -11,13 +11,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Authorize extends CI_Controller {
 
-	/**
-	 * 返回授权token
-	 *
-	 * @return string 返回加密的授权字符串。
-	 */
-	public function get_token()
-	{
-		return 'token_string';
-	}
+    /**
+     * 返回授权token
+     *
+     * @return string 返回加密的授权字符串。
+     */
+    public function get_token()
+    {
+        return 'token_string';
+    }
 }
