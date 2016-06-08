@@ -50,4 +50,50 @@ class Issue extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '执行错误')));
         }
     }
+
+    /**
+     * 根据条件输出列表
+     *
+     * 计划id
+     * 项目id
+     * 步长
+     * 偏移
+     */
+    public function rows_by_plan()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //项目id格式验证
+        $projectid = $this->input->get('projectid');
+        if (!($projectid != 0 && ctype_digit($projectid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':项目id格式错误');
+            exit(json_encode(array('status' => false, 'error' => '项目id格式错误')));
+        }
+
+        //计划id格式验证
+        $planid = $this->input->get('planid');
+        if (!($planid != 0 && ctype_digit($planid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':计划id格式错误');
+            exit(json_encode(array('status' => false, 'error' => '计划id格式错误')));
+        }
+
+        //偏移量
+        $offset = $this->input->get('offset');
+        if (!(ctype_digit($offset))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':查询偏移量格式错误');
+            exit(json_encode(array('status' => false, 'error' => '查询偏移量格式错误')));
+        }
+
+        $this->load->model('Model_issue', 'issue', TRUE);
+        $rows = $this->issue->get_rows(array('id', 'type', 'level', 'issue_name', 'add_user', 'add_time', 'accept_user', 'accept_time', 'workflow', 'status'), array('project_id' => $projectid, 'plan_id' => $planid, 'status' => 1), array('id' => 'desc'), 20, $offset);
+        if ($rows) {
+            exit(json_encode(array('status' => true, 'content' => $rows)));
+        } else {
+            exit(json_encode(array('status' => false, 'error' => '数据不存在')));
+        }
+    }
 }

@@ -98,9 +98,9 @@ class Project extends CI_Controller {
         $this->load->model('Model_project', 'project', TRUE);
         $rows = $this->project->get_rows(array('id', 'project_name', 'project_discription', 'add_user', 'add_time', 'last_user', 'last_time'), $where, array('id' => 'desc'), 100);
         if ($rows) {
-            exit(json_encode(array('status' => true, 'data' => $rows)));
+            exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
-            exit(json_encode(array('status' => false, 'data' => '')));
+            exit(json_encode(array('status' => false, 'error' => '暂无数据')));
         }
     }
 }

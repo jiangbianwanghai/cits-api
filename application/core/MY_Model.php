@@ -53,12 +53,32 @@ class MY_Model extends CI_Model {
         if ($where) {
             $customDB->where($where);
         }
+        $clone_db = clone($customDB);
+        $rows['total'] = $customDB->count_all_results($this->table);
+        $customDB = $clone_db;
         if ($order) {
             foreach ($order as $key => $value) {
                 $customDB->order_by($key, $value);
             }
         }
         $this->db->limit($limit, $offset);
+        $query = $customDB->get($this->table);
+        $customDB->close();
+        $rows['data'] = $query->result_array();
+        return $rows;
+    }
+
+    /**
+     * 根据主键获取记录
+     */
+    public function get_rows_by_ids($ids, $field = array())
+    {
+        $customDB = $this->load->database($this->dbgroup, TRUE);
+        if ($field)
+            $fieldStr = "`".implode("`,`", $field)."`";
+        else
+            $fieldStr = "*";
+        $customDB->where_in('issue_id', $ids);
         $query = $customDB->get($this->table);
         $customDB->close();
         return $query->result_array();

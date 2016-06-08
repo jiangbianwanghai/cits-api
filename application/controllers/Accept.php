@@ -42,8 +42,9 @@ class Accept extends CI_Controller {
     public function write()
     {
         //验证请求的方式
-        if (empty($_POST)) {
-            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
         }
 
         //验证输入
@@ -52,6 +53,7 @@ class Accept extends CI_Controller {
         $this->form_validation->set_rules('issue_id', '任务ID', 'trim|required|is_natural_no_zero');
         $this->form_validation->set_rules('flow', '参与角色类型', 'trim|required|is_natural_no_zero');
         if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
         }
 
@@ -67,7 +69,52 @@ class Accept extends CI_Controller {
         if ($id) {
             exit(json_encode(array('status' => true, 'data' => $id)));
         } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
             exit(json_encode(array('status' => false, 'error' => '执行错误')));
+        }
+    }
+
+    /**
+     * 输出参与人员
+     */
+    public function users_by_plan()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //项目id格式验证
+        $projectid = $this->input->get('projectid');
+        if (!($projectid != 0 && ctype_digit($projectid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':项目id格式错误');
+            exit(json_encode(array('status' => false, 'error' => '项目id格式错误')));
+        }
+
+        //计划id格式验证
+        $planid = $this->input->get('planid');
+        if (!($planid != 0 && ctype_digit($planid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':计划id格式错误');
+            exit(json_encode(array('status' => false, 'error' => '计划id格式错误')));
+        }
+
+        //得到计划下的任务信息
+        $this->load->model('Model_issue', 'issue', TRUE);
+        $rows = $this->issue->get_rows(array('id'), array('project_id' => $projectid, 'plan_id' => $planid, 'status' => 1), array(), 100);
+        if ($rows) {
+            foreach ($rows['data'] as $key => $value) {
+                $ids[] = $value['id'];
+            }
+            $this->load->model('Model_accept', 'accept', TRUE);
+            $rows = $this->accept->get_rows_by_ids($ids, array('id', 'accept_user', 'accept_time', 'issue_id', 'flow'));
+            if ($rows) {
+                exit(json_encode(array('status' => true, 'content' => $rows)));
+            } else {
+                exit(json_encode(array('status' => false, 'error' => '无参与人员')));
+            }
+        } else {
+            exit(json_encode(array('status' => false, 'error' => '此计划下无任务')));
         }
     }
 }
