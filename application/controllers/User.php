@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class User extends CI_Controller {
 
     /**
-     * 用户写入
+     * 用户信息写入
      */
     public function write()
     {
@@ -212,9 +212,15 @@ class User extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
         }
 
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
         $id = $this->input->post('id');
         if (!($id != 0 && ctype_digit($id))) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':项目ID[ '.$uid.' ]格式错误');
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':项目ID[ '.$id.' ]格式错误');
             exit(json_encode(array('status' => false, 'error' => '项目ID格式错误')));
         }
 
@@ -227,8 +233,8 @@ class User extends CI_Controller {
         $this->load->model('Model_users', 'users', TRUE);
         $row = $this->users->fetchOne(array('star_project'), array('uid' => $uid));
         if (!$row) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
-            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '此用户不存在')));
         }
         if ($row['star_project']) {
             $star_project = unserialize($row['star_project']);
@@ -262,9 +268,15 @@ class User extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
         }
 
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
         $id = $this->input->post('id');
         if (!($id != 0 && ctype_digit($id))) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':项目ID[ '.$uid.' ]格式错误');
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':项目ID[ '.$id.' ]格式错误');
             exit(json_encode(array('status' => false, 'error' => '项目ID格式错误')));
         }
 
@@ -277,8 +289,8 @@ class User extends CI_Controller {
         $this->load->model('Model_users', 'users', TRUE);
         $row = $this->users->fetchOne(array('star_project'), array('uid' => $uid));
         if (!$row) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
-            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '此用户不存在')));
         }
         if ($row['star_project']) {
             $star_project = unserialize($row['star_project']);
@@ -296,6 +308,9 @@ class User extends CI_Controller {
                 log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':删除关注失败');
                 exit(json_encode(array('status' => false, 'error' => '删除关注失败')));
             }
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':只有关注后才可以删除操作');
+            exit(json_encode(array('status' => false, 'error' => '只有关注后才可以删除操作')));
         }
     }
 
@@ -310,6 +325,12 @@ class User extends CI_Controller {
         if ($_POST) {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
             exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
         }
 
         $uid = $this->input->get('uid');
