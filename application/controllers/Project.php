@@ -40,16 +40,31 @@ class Project extends CI_Controller {
     public function write()
     {
         //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
         if (empty($_POST)) {
-            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
         }
 
         //验证输入
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('project_name', '项目团队全称', 'trim|required');
+        $this->form_validation->set_rules('project_name', '项目团队全称', 'trim|required',
+            array('required' => '%s 不能为空')
+        );
         $this->form_validation->set_rules('project_description', '描述', 'trim');
-        $this->form_validation->set_rules('add_user', '创建人', 'trim|required|is_natural_no_zero');
+        $this->form_validation->set_rules('add_user', '创建人', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '创建人ID[ '.$this->input->post('add_user').' ]不符合规则',
+            )
+        );
         if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
         }
 
@@ -63,9 +78,10 @@ class Project extends CI_Controller {
         );
         $id = $this->project->add($Post_data);
         if ($id) {
-            exit(json_encode(array('status' => true, 'data' => $id)));
+            exit(json_encode(array('status' => true, 'content' => $id)));
         } else {
-            exit(json_encode(array('status' => false, 'error' => '执行错误')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
 
@@ -76,31 +92,53 @@ class Project extends CI_Controller {
      */
     public function cache()
     {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
         $this->load->model('Model_project', 'project', TRUE);
         $rows = $this->project->get_rows(array('id', 'project_name', 'add_user', 'add_time'), array(), array('id' => 'desc'), 100);
-        if ($rows) {
-            exit(json_encode(array('status' => true, 'data' => $rows)));
+        if ($rows['total']) {
+            exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
-            exit(json_encode(array('status' => false, 'data' => '')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
         }
     }
 
     /**
      * 输出项目团队列表信息
+     *
+     * 默认显示所有项目团队信息，传值UID则显示指定用户下的项目列表
      */
     public function rows()
     {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //如果有uid传值，则输出指定uid下的项目列表
         $where = array();
         $uid = $this->input->get('uid');
         if ($uid) {
+            if (!($uid != 0 && ctype_digit($uid))) {
+                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]格式错误');
+                exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+            }
             $where = array('add_user' => $uid);
         }
+
         $this->load->model('Model_project', 'project', TRUE);
         $rows = $this->project->get_rows(array('id', 'project_name', 'project_discription', 'add_user', 'add_time', 'last_user', 'last_time'), $where, array('id' => 'desc'), 100);
-        if ($rows) {
+        if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
-            exit(json_encode(array('status' => false, 'error' => '暂无数据')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
         }
     }
 }

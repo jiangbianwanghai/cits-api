@@ -365,7 +365,7 @@ class User extends CI_Controller {
 
         $this->load->model('Model_users', 'users', TRUE);
         $rows = $this->users->get_rows(array('uid', 'username', 'realname', 'email', 'add_time', 'last_login_time', 'role'), array(), array('uid' => 'desc'), 500);
-        if ($rows) {
+        if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
