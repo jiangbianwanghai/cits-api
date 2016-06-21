@@ -68,7 +68,7 @@ class Handle extends CI_Controller {
         $this->form_validation->set_rules('target_type', '目标类型', 'trim|required|is_natural_no_zero|max_length[1]',
             array(
                 'required' => '%s 不能为空',
-                'is_natural_no_zero' => '发送者ID[ '.$this->input->post('sender').' ]不符合规则',
+                'is_natural_no_zero' => '目标类型[ '.$this->input->post('target_type').' ]不符合规则',
                 'max_length' => '目标类型[ '.$this->input->post('target_type').' ]太长了'
             )
         );
@@ -81,8 +81,8 @@ class Handle extends CI_Controller {
         $this->form_validation->set_rules('type', '日志类型', 'trim|required|is_natural_no_zero|max_length[1]',
             array(
                 'required' => '%s 不能为空',
-                'is_natural_no_zero' => '发送者ID[ '.$this->input->post('sender').' ]不符合规则',
-                'max_length' => '目标类型[ '.$this->input->post('target_type').' ]太长了'
+                'is_natural_no_zero' => '日志类型[ '.$this->input->post('type').' ]不符合规则',
+                'max_length' => '日志类型[ '.$this->input->post('type').' ]太长了'
             )
         );
         $this->form_validation->set_rules('content', '快照', 'trim');
