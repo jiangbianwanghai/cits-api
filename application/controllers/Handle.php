@@ -75,7 +75,7 @@ class Handle extends CI_Controller {
         $this->form_validation->set_rules('target', '目标ID', 'trim|required|is_natural_no_zero',
             array(
                 'required' => '%s 不能为空',
-                'is_natural_no_zero' => '发送者ID[ '.$this->input->post('sender').' ]不符合规则',
+                'is_natural_no_zero' => '目标ID[ '.$this->input->post('target').' ]不符合规则',
             )
         );
         $this->form_validation->set_rules('type', '日志类型', 'trim|required|is_natural_no_zero|max_length[1]',

@@ -78,7 +78,7 @@ class MY_Model extends CI_Model {
             $fieldStr = "`".implode("`,`", $field)."`";
         else
             $fieldStr = "*";
-        $customDB->where_in('issue_id', $ids);
+        $customDB->where_in($this->primary, $ids);
         $query = $customDB->get($this->table);
         $customDB->close();
         return $query->result_array();
