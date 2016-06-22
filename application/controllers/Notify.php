@@ -112,7 +112,7 @@ class Notify extends CI_Controller {
             }
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':数据不存在');
+            log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':数据不存在，查询UID是[ '.$uid.' ]');
             exit(json_encode(array('status' => false, 'error' => '数据不存在')));
         }
     }
