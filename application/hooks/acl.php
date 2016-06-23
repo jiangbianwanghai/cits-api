@@ -30,5 +30,6 @@ class acl{
             log_message('error', $this->CI->router->fetch_class().'/'.$this->CI->router->fetch_method().':授权失败，提交的access_token [ '.$access_token.' ]');
             exit(json_encode(array('status' => false, 'error' => '授权失败')));
         }
+        log_message('debug', '正在访问的授权用户：'.$access_token);
     }
 }

@@ -71,14 +71,18 @@ class MY_Model extends CI_Model {
     /**
      * 根据主键获取记录
      */
-    public function get_rows_by_ids($ids, $field = array())
+    public function get_rows_by_ids($ids, $field = array(), $key = '')
     {
         $customDB = $this->load->database($this->dbgroup, TRUE);
         if ($field)
             $fieldStr = "`".implode("`,`", $field)."`";
         else
             $fieldStr = "*";
-        $customDB->where_in($this->primary, $ids);
+        
+        if (!$key)
+            $key = $this->primary;
+
+        $customDB->where_in($key, $ids);
         $query = $customDB->get($this->table);
         $customDB->close();
         return $query->result_array();

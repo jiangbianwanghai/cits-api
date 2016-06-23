@@ -101,13 +101,13 @@ class Accept extends CI_Controller {
 
         //得到计划下的任务信息
         $this->load->model('Model_issue', 'issue', TRUE);
-        $rows = $this->issue->get_rows(array('id'), array('project_id' => $projectid, 'plan_id' => $planid, 'status' => 1), array(), 100);
+        $rows = $this->issue->get_rows(array('id'), array('project_id' => $projectid, 'plan_id' => $planid, 'status' => 1), array(), 500);
         if ($rows) {
             foreach ($rows['data'] as $key => $value) {
                 $ids[] = $value['id'];
             }
             $this->load->model('Model_accept', 'accept', TRUE);
-            $rows = $this->accept->get_rows_by_ids($ids, array('id', 'accept_user', 'accept_time', 'issue_id', 'flow'));
+            $rows = $this->accept->get_rows_by_ids($ids, array('id', 'accept_user', 'accept_time', 'issue_id', 'flow'), 'issue_id');
             if ($rows) {
                 exit(json_encode(array('status' => true, 'content' => $rows)));
             } else {
