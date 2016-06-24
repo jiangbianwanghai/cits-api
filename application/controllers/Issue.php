@@ -170,7 +170,7 @@ class Issue extends CI_Controller {
         $this->load->model('Model_issue', 'issue', TRUE);
         $row = $this->issue->fetchOne(array(), array('id' => $id));
         if ($row) {
-            exit(json_encode(array('status' => true, 'content' => $row)));
+            exit(json_encode(array('status' => true, 'content' => $row, 'test' => 'ok')));
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
