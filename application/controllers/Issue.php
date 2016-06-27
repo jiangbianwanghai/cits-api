@@ -102,6 +102,92 @@ class Issue extends CI_Controller {
     }
 
     /**
+     * 任务更新
+     */
+    public function update()
+    {
+        //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+        
+        //验证输入
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('issue_id', '任务ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '任务ID[ '.$this->input->post('issue_id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('plan_id', '所属计划ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '所属计划ID[ '.$this->input->post('plan_id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('type', '类型', 'trim|required|is_natural_no_zero|max_length[1]',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '类型[ '.$this->input->post('type').' ]不符合规则',
+                'max_length' => '类型[ '.$this->input->post('type').' ]太长了'
+            )
+        );
+        $this->form_validation->set_rules('level', '优先级', 'trim|required|is_natural_no_zero|max_length[1]',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '优先级[ '.$this->input->post('level').' ]不符合规则',
+                'max_length' => '优先级[ '.$this->input->post('level').' ]太长了'
+            )
+        );
+        $this->form_validation->set_rules('issue_name', '任务标题', 'trim|required',
+            array('required' => '%s 不能为空')
+        );
+        $this->form_validation->set_rules('issue_summary', '任务详情', 'trim');
+        $this->form_validation->set_rules('url', '相关链接', 'trim');
+        $this->form_validation->set_rules('last_user', '修改人ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '类型[ '.$this->input->post('last_user').' ]不符合规则'
+            )
+        );
+        if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
+            exit(json_encode(array('status' => false, 'error' => validation_errors())));
+        }
+
+        if ($this->_check_issue_name($this->input->post('plan_id'), $this->input->post('issue_name')) > 1) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':任务名[ '.$this->input->post('issue_name').' ], 计划id[ '.$this->input->post('plan_id').' ]验证重复');
+            exit(json_encode(array('status' => false, 'error' => '此任务已经存在')));
+        }
+
+        //写入数据
+        $this->load->model('Model_issue', 'issue', TRUE);
+        $Post_data = array(
+            'type' => $this->input->post('type'),
+            'level' => $this->input->post('level'),
+            'issue_name' => $this->input->post('issue_name'),
+            'issue_summary' => $this->input->post('issue_summary'),
+            'url' => $this->input->post('url'),
+            'last_user' => $this->input->post('last_user'),
+            'last_time' => time(),
+        );
+        $bool = $this->issue->update_by_where($Post_data, array('id' => $this->input->post('issue_id')));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    /**
      * 根据条件输出列表
      *
      * 计划id

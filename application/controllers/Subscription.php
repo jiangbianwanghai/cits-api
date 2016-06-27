@@ -39,4 +39,44 @@ class Subscription extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '执行错误')));
         }
     }
+
+    /**
+     * 输出订阅列表
+     */
+    public function get_user_by_target()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $target_id = $this->input->get('target_id');
+        if (!($target_id != 0 && ctype_digit($target_id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':目标id[ '.$target_id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '目标id格式错误')));
+        }
+
+        $target_type = $this->input->get('target_type');
+        if (!in_array($target_type, array('1', '2', '3', '4', '5'))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':目标类型[ '.$target_id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '目标类型格式错误')));
+        }
+
+        $this->load->model('Model_subscription', 'subscription', TRUE);
+        $rows = $this->subscription->get_rows(array('id', 'user', ), array('target' => $target_id, 'target_type' => $target_type), array('id' => 'desc'), 100);
+        if ($rows['total']) {
+            exit(json_encode(array('status' => true, 'content' => $rows)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+
+    }
 }
