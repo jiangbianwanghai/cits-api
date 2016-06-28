@@ -11,7 +11,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Bug extends CI_Controller {
 
     /**
-     * 根据根据任务id输出bug
+     * 根据任务id输出bug
      */
     public function get_rows_by_issue()
     {

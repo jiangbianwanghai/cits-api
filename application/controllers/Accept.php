@@ -132,15 +132,17 @@ class Accept extends CI_Controller {
             if ($rows) {
                 exit(json_encode(array('status' => true, 'content' => $rows)));
             } else {
+                log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':无参与人员');
                 exit(json_encode(array('status' => false, 'error' => '无参与人员')));
             }
         } else {
+            log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':此计划下无任务');
             exit(json_encode(array('status' => false, 'error' => '此计划下无任务')));
         }
     }
 
     /**
-     * 根据根据任务id输出bug
+     * 根据任务id输出bug
      */
     public function get_rows_by_issue()
     {
