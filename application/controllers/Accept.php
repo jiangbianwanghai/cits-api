@@ -47,11 +47,32 @@ class Accept extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
         }
 
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
         //验证输入
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('accept_user', '参与者ID', 'trim|required|is_natural_no_zero');
-        $this->form_validation->set_rules('issue_id', '任务ID', 'trim|required|is_natural_no_zero');
-        $this->form_validation->set_rules('flow', '参与角色类型', 'trim|required|is_natural_no_zero');
+        $this->form_validation->set_rules('accept_user', '参与者ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '参与者ID[ '.$this->input->post('accept_user').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('issue_id', '任务ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '任务ID[ '.$this->input->post('issue_id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('flow', '参与角色类型', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '参与角色类型[ '.$this->input->post('flow').' ]不符合规则',
+            )
+        );
         if ($this->form_validation->run() == FALSE) {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
@@ -70,7 +91,7 @@ class Accept extends CI_Controller {
             exit(json_encode(array('status' => true, 'data' => $id)));
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
-            exit(json_encode(array('status' => false, 'error' => '执行错误')));
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
 

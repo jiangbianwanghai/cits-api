@@ -85,6 +85,7 @@ class Handle extends CI_Controller {
                 'max_length' => '日志类型[ '.$this->input->post('type').' ]太长了'
             )
         );
+        $this->form_validation->set_rules('subject', '标题', 'trim');
         $this->form_validation->set_rules('content', '快照', 'trim');
         if ($this->form_validation->run() == FALSE) {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
@@ -99,6 +100,7 @@ class Handle extends CI_Controller {
             'target_type' => $this->input->post('target_type'),
             'target' => $this->input->post('target'),
             'type' => $this->input->post('type'),
+            'subject' => $this->input->post('subject'),
             'content' => $this->input->post('content'),
             'add_time' => time(),
         );

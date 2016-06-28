@@ -11,61 +11,76 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Plan extends CI_Controller {
 
     /**
-     * 项目团队信息写入
-     *
-     * 此方法只接受POST传值，并对传值进行有效性验证.
-     *
-     * 传值
-     *
-     * ```
-     * project_name: 项目团队全称 [必填]
-     * project_description: 项目团队描述 [选填]
-     * add_user: 创建人 [必填]
-     * ```
-     *
-     * 错误提示：
-     *
-     * ```
-     * {"status":false,"error":"错误信息内容"}
-     * ```
-     *
-     * 成功提示：
-     *
-     * ```
-     * {"status":true,"data":记录ID}
-     * ```
-     *
-     * @return string 成功返回记录ID，错误返回错误信息。
+     * 计划写入
      */
     public function write()
     {
         //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
         if (empty($_POST)) {
-            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
         }
 
         //验证输入
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('project_name', '项目团队全称', 'trim|required');
-        $this->form_validation->set_rules('project_description', '描述', 'trim');
-        $this->form_validation->set_rules('add_user', '创建人', 'trim|required|is_natural_no_zero');
+        $this->form_validation->set_rules('project_id', '项目ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '项目ID[ '.$this->input->post('project_id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('plan_name', '项目团队全称', 'trim|required',
+            array('required' => '%s 不能为空')
+        );
+        $this->form_validation->set_rules('plan_description', '描述', 'trim');
+        $this->form_validation->set_rules('startime', '开始时间', 'trim|required|is_natural_no_zero|exact_length[10]',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '开始时间[ '.$this->input->post('startime').' ]不符合规则',
+                'exact_length' => '开始时间[ '.$this->input->post('startime').' ]必须是时间戳'
+            )
+        );
+        $this->form_validation->set_rules('endtime', '结束时间', 'trim|required|is_natural_no_zero|exact_length[10]',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '结束时间[ '.$this->input->post('endtime').' ]不符合规则',
+                'exact_length' => '结束时间[ '.$this->input->post('startime').' ]必须是时间戳'
+            )
+        );
+        $this->form_validation->set_rules('add_user', '创建人', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '创建人ID[ '.$this->input->post('add_user').' ]不符合规则',
+            )
+        );
         if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
         }
 
         //写入数据
-        $this->load->model('Model_project', 'project', TRUE);
+        $this->load->model('Model_plan', 'plan', TRUE);
         $Post_data = array(
-            'project_name' => $this->input->post('project_name'),
-            'project_discription' => $this->input->post('project_description'),
+            'project_id' => $this->input->post('project_id'),
+            'plan_name' => $this->input->post('plan_name'),
+            'plan_discription' => $this->input->post('plan_description'),
+            'startime' => $this->input->post('startime'),
+            'endtime' => $this->input->post('endtime'),
             'add_user' => $this->input->post('add_user'),
             'add_time' => time(),
         );
-        $id = $this->project->add($Post_data);
+        $id = $this->plan->add($Post_data);
         if ($id) {
-            exit(json_encode(array('status' => true, 'data' => $id)));
+            exit(json_encode(array('status' => true, 'content' => $id)));
         } else {
-            exit(json_encode(array('status' => false, 'error' => '执行错误')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
 

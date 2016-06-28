@@ -11,15 +11,38 @@ class Subscription extends CI_Controller {
     public function write()
     {
         //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
         if (empty($_POST)) {
-            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
         }
 
         //验证输入
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('target', '目标ID', 'trim|required|is_natural_no_zero');
-        $this->form_validation->set_rules('target_type', '目标类型', 'trim|required|is_natural_no_zero|max_length[1]');
-        $this->form_validation->set_rules('user', '用户ID', 'trim|required|is_natural_no_zero');
+        $this->form_validation->set_rules('target', '目标ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '目标ID[ '.$this->input->post('target').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('target_type', '目标类型', 'trim|required|is_natural_no_zero|max_length[1]',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '目标类型[ '.$this->input->post('target_type').' ]不符合规则',
+                'max_length' => '长度只能是一位'
+            )
+        );
+        $this->form_validation->set_rules('user', '用户ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '用户ID[ '.$this->input->post('user').' ]不符合规则',
+            )
+        );
         if ($this->form_validation->run() == FALSE) {
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
         }
@@ -34,9 +57,10 @@ class Subscription extends CI_Controller {
         );
         $id = $this->subscription->add($Post_data);
         if ($id) {
-            exit(json_encode(array('status' => true, 'data' => $id)));
+            exit(json_encode(array('status' => true, 'content' => $id)));
         } else {
-            exit(json_encode(array('status' => false, 'error' => '执行错误')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
 
