@@ -99,7 +99,7 @@ class Repos extends CI_Controller {
         }
 
         $this->load->model('Model_repos', 'repos', TRUE);
-        $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url'), array(), array('id' => 'desc'), 100);
+        $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url', 'merge'), array(), array('id' => 'desc'), 100);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {

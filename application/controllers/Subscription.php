@@ -47,6 +47,12 @@ class Subscription extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
         }
 
+        //如果已经订阅，则不再订阅
+        if ($this->_check_subscription($this->input->post('target'), $this->input->post('target_type'), $this->input->post('user'))) {
+            log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':已订阅');
+            exit(json_encode(array('status' => false, 'error' => '已订阅')));
+        }
+
         //写入数据
         $this->load->model('Model_subscription', 'subscription', TRUE);
         $Post_data = array(
@@ -101,6 +107,21 @@ class Subscription extends CI_Controller {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
         }
+    }
 
+    /**
+     * 验证是否重复订阅
+     */
+    private function _check_subscription($target = 0 , $target_type = 0, $user = 0)
+    {
+        if ($target && $target_type && $user) {
+            $this->load->model('Model_subscription', 'subscription', TRUE);
+            $rows = $this->subscription->get_rows(array('id'), array('target' => $target, 'target_type' => $target_type, 'user' => $user));
+            if ($rows['total']) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

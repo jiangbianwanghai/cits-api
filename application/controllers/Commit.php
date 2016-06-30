@@ -40,32 +40,80 @@ class Commit extends CI_Controller {
     public function write()
     {
         //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
         if (empty($_POST)) {
-            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
         }
 
         //验证输入
         $this->load->library('form_validation');
-        $this->form_validation->set_rules('project_name', '项目团队全称', 'trim|required');
-        $this->form_validation->set_rules('project_description', '描述', 'trim');
-        $this->form_validation->set_rules('add_user', '创建人', 'trim|required|is_natural_no_zero');
+        $this->form_validation->set_rules('project_id', '所属项目团队ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '所属项目团队ID[ '.$this->input->post('project_id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('plan_id', '所属计划ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '所属计划ID[ '.$this->input->post('plan_id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('issue_id', '任务ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '任务ID[ '.$this->input->post('issue_id').' ]不符合规则'
+            )
+        );
+        $this->form_validation->set_rules('repos_id', '代码库id', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '代码库id[ '.$this->input->post('repos_id').' ]不符合规则'
+            )
+        );
+        $this->form_validation->set_rules('br', '分支', 'trim|required',
+            array('required' => '%s 不能为空')
+        );
+        $this->form_validation->set_rules('test_flag', '版本号', 'trim|required',
+            array('required' => '%s 不能为空')
+        );
+        $this->form_validation->set_rules('add_user', '创建人ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '类型[ '.$this->input->post('add_user').' ]不符合规则'
+            )
+        );
+        $this->form_validation->set_rules('test_summary', '提测说明', 'trim');
         if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
             exit(json_encode(array('status' => false, 'error' => validation_errors())));
         }
 
         //写入数据
-        $this->load->model('Model_project', 'project', TRUE);
+        $this->load->model('Model_test', 'test', TRUE);
         $Post_data = array(
-            'project_name' => $this->input->post('project_name'),
-            'project_discription' => $this->input->post('project_description'),
+            'project_id' => $this->input->post('project_id'),
+            'plan_id' => $this->input->post('plan_id'),
+            'issue_id' => $this->input->post('issue_id'),
+            'repos_id' => $this->input->post('repos_id'),
+            'br' => $this->input->post('br'),
+            'test_flag' => $this->input->post('test_flag'),
+            'test_summary' => $this->input->post('test_summary'),
             'add_user' => $this->input->post('add_user'),
             'add_time' => time(),
         );
-        $id = $this->project->add($Post_data);
+        $id = $this->test->add($Post_data);
         if ($id) {
-            exit(json_encode(array('status' => true, 'data' => $id)));
+            exit(json_encode(array('status' => true, 'content' => $id)));
         } else {
-            exit(json_encode(array('status' => false, 'error' => '执行错误')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
 
