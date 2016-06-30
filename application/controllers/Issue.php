@@ -264,6 +264,66 @@ class Issue extends CI_Controller {
     }
 
     /**
+     * 更改工作流
+     */
+    public function change_flow()
+    {
+        //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
+        //验证输入
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('id', '任务ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '任务ID[ '.$this->input->post('id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('uid', '用户ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '用户ID[ '.$this->input->post('uid').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('flow', '工作流', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '工作流[ '.$this->input->post('flow').' ]不符合规则',
+            )
+        );
+        if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
+            exit(json_encode(array('status' => false, 'error' => validation_errors())));
+        }
+
+        //写入数据
+        $this->load->model('Model_issue', 'issue', TRUE);
+        $Post_data = array(
+            'workflow' => $this->input->post('flow'),
+            'accept_user' => $this->input->post('uid'),
+            'accept_time' => time(),
+            'last_user' => $this->input->post('uid'),
+            'last_time' => time(),
+        );
+        $bool = $this->issue->update_by_where($Post_data, array('id' => $this->input->post('id')));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    /**
      * 验证任务名称是否重复
      *
      * 同一个计划下的任务名称不能重复

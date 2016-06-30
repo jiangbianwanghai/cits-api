@@ -112,4 +112,41 @@ class Handle extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
+
+    /**
+     * 输出操作记录
+     *
+     * 根据任务id
+     */
+    public function get_rows()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //id格式验证
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':任务id格式不正确');
+            exit(json_encode(array('status' => false, 'error' => '任务id格式不正确')));
+        }
+
+
+        $this->load->model('Model_logs', 'logs', TRUE);
+        $rows = $this->logs->get_rows(array('id', 'sender', 'action', 'target_type', 'target', 'subject', 'content', 'add_time'), array('target_type' => 3, 'target' => $id), array('id' => 'asc'), 10);
+        if ($rows['total']) {
+            exit(json_encode(array('status' => true, 'content' => $rows)));
+        } else {
+            log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':数据不存在，任务id是[ '.$id.' ]');
+            exit(json_encode(array('status' => false, 'error' => '数据不存在')));
+        }
+    }
 }
