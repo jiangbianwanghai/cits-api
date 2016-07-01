@@ -202,8 +202,8 @@ class User extends CI_Controller {
                 exit(json_encode(array('status' => false, 'error' => '验证不通过')));
             }
         } else {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
-            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':账户不存在');
+            exit(json_encode(array('status' => false, 'error' => '账户不存在')));
         }
     }
 
@@ -360,6 +360,48 @@ class User extends CI_Controller {
     }
 
     /**
+     * 输出单条信息根据邮箱
+     *
+     * 主要用于需要获取单条信息的需求
+     */
+    public function get_row_by_email()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $str = $this->input->get('email');
+        if (empty($str)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':邮箱不能为空');
+            exit(json_encode(array('status' => false, 'error' => '邮箱不能为空')));
+        }
+
+        $this->load->library('form_validation');
+        if ($this->form_validation->valid_email($str) == FALSE || $this->form_validation->min_length($str, 5) == FALSE || $this->form_validation->max_length($str, 50) == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':邮箱[ '.$str.' ]格式不正确，拒绝验证');
+            exit(json_encode(array('status' => false, 'error' => '邮箱格式不正确，拒绝验证')));
+        }
+
+        $this->load->model('Model_users', 'users', TRUE);
+        $row = $this->users->fetchOne(array(), array('email' => $str));
+        if (!$row) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+
+        exit(json_encode(array('status' => true, 'content' => $row)));
+
+    }
+
+    /**
      * 输出用户缓存信息
      *
      * 主要用于常用的用户信息查询，减轻读库的压力
@@ -431,6 +473,57 @@ class User extends CI_Controller {
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':修改失败');
             exit(json_encode(array('status' => false, 'error' => '修改失败')));
+        }
+    }
+
+    /**
+     * 更改重置密码状态
+     */
+    public function reset()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $forgot = $this->input->get('forgot');
+        if (!(in_array($forgot, array('0', '1')))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':标记[ '.$forgot.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '标记格式错误')));
+        }
+
+        $str = $this->input->get('email');
+        if (empty($str)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':邮箱不能为空');
+            exit(json_encode(array('status' => false, 'error' => '邮箱不能为空')));
+        }
+
+        $this->load->library('form_validation');
+        if ($this->form_validation->valid_email($str) == FALSE || $this->form_validation->min_length($str, 5) == FALSE || $this->form_validation->max_length($str, 50) == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':邮箱[ '.$str.' ]格式不正确，拒绝验证');
+            exit(json_encode(array('status' => false, 'error' => '邮箱格式不正确，拒绝验证')));
+        }
+        if ($forgot == 1) {
+            $set = array('forgot' => '1', 'reset_email_time' => time());
+        }
+        if ($forgot == 0) {
+            $set = array('forgot' => '0', 'reset_email_time' => '0');
+        }
+
+        $this->load->model('Model_users', 'users', TRUE);
+        $flag = $this->users->update_by_where($set, array('email' => $str));
+        if ($flag) {
+            exit(json_encode(array('status' => true, 'content' => '操作成功')));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作失败');
+            exit(json_encode(array('status' => false, 'error' => '操作失败')));
         }
     }
 }
