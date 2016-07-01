@@ -168,8 +168,8 @@ class User extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
         }
 
-        $username = $this->input->get('username');
-        if (empty($username)) {
+        $account = $this->input->get('account');
+        if (empty($account)) {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户名不能为空');
             exit(json_encode(array('status' => false, 'error' => '用户名不能为空')));
         }
@@ -181,13 +181,18 @@ class User extends CI_Controller {
         }
 
         $this->load->library('form_validation');
-        if ($this->form_validation->alpha_dash($username) == FALSE || $this->form_validation->min_length($username, 3) == FALSE || $this->form_validation->max_length($username, 30) == FALSE || $this->form_validation->min_length($password, 6) == FALSE || $this->form_validation->max_length($password, 16) == FALSE) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户名[ '.$username.' ]OR密码[ '.$password.' ]格式不正确，拒绝验证');
-            exit(json_encode(array('status' => false, 'error' => '用户名OR密码格式不正确，拒绝验证')));
+        if ($this->form_validation->min_length($password, 6) == FALSE || $this->form_validation->max_length($password, 16) == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':密码[ '.$password.' ]格式不正确，拒绝验证');
+            exit(json_encode(array('status' => false, 'error' => '密码格式不正确，拒绝验证')));
+        }
+        if ($this->form_validation->valid_email($account) == FALSE) {
+            $where = array('username' => $account);
+        } else {
+            $where = array('email' => $account);
         }
 
         $this->load->model('Model_users', 'users', TRUE);
-        $row = $this->users->fetchOne(array(), array('username' => $username));
+        $row = $this->users->fetchOne(array(), $where);
         if ($row) {
             $password = md5(md5($password).$row['salt']);
             if ($row['password'] == $password) {
