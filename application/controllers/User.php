@@ -40,7 +40,7 @@ class User extends CI_Controller {
                 'max_length' => '用户名[ '.$this->input->post('username').' ]太长了'
             )
         );
-        $this->form_validation->set_rules('password', '密码', 'trim|required|exact_length[32]',
+        $this->form_validation->set_rules('password', '密码', 'trim|required|min_length[6]|max_length[16]',
             array(
                 'required' => '%s 不能为空',
                 'exact_length' => '你提供的密码[ '.$this->input->post('password').' ] 必须是 32位 的MD5加密字符串'
@@ -53,10 +53,13 @@ class User extends CI_Controller {
 
         //写入数据
         $this->load->model('Model_users', 'users', TRUE);
+        $salt = substr(uniqid(rand()), -6);
+        $password = md5(md5($this->input->post('password')).$salt);
         $Post_data = array(
             'email' => $this->input->post('email'),
             'username' => $this->input->post('username'),
-            'password' => $this->input->post('password'),
+            'password' => $password,
+            'salt' => $salt,
             'add_time' => time(),
         );
         $id = $this->users->add($Post_data);
@@ -178,7 +181,7 @@ class User extends CI_Controller {
         }
 
         $this->load->library('form_validation');
-        if ($this->form_validation->alpha_dash($username) == FALSE || $this->form_validation->min_length($username, 3) == FALSE || $this->form_validation->max_length($username, 30) == FALSE || $this->form_validation->exact_length($password, 32) == FALSE) {
+        if ($this->form_validation->alpha_dash($username) == FALSE || $this->form_validation->min_length($username, 3) == FALSE || $this->form_validation->max_length($username, 30) == FALSE || $this->form_validation->min_length($password, 6) == FALSE || $this->form_validation->max_length($password, 16) == FALSE) {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户名[ '.$username.' ]OR密码[ '.$password.' ]格式不正确，拒绝验证');
             exit(json_encode(array('status' => false, 'error' => '用户名OR密码格式不正确，拒绝验证')));
         }
@@ -186,6 +189,7 @@ class User extends CI_Controller {
         $this->load->model('Model_users', 'users', TRUE);
         $row = $this->users->fetchOne(array(), array('username' => $username));
         if ($row) {
+            $password = md5(md5($password).$row['salt']);
             if ($row['password'] == $password) {
                 exit(json_encode(array('status' => true, 'content' => $row)));
             } else {
@@ -370,6 +374,58 @@ class User extends CI_Controller {
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
+
+    /**
+     * 修改密码
+     */
+    public function change_password()
+    {
+        //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
+        //验证输入
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('email', '邮箱', 'trim|required|valid_email|min_length[5]|max_length[50]',
+            array(
+                'required' => '%s 不能为空',
+                'valid_email' => '邮箱[ '.$this->input->post('email').' ]不符合规则',
+                'min_length' => '邮箱[ '.$this->input->post('email').' ]长度不够',
+                'max_length' => '邮箱[ '.$this->input->post('email').' ]太长了'
+            )
+        );
+        $this->form_validation->set_rules('password', '密码', 'trim|required|min_length[6]|max_length[16]',
+            array(
+                'required' => '%s 不能为空',
+                'alpha_dash' => '密码[ '.$this->input->post('password').' ]不符合规则',
+                'min_length' => '密码[ '.$this->input->post('password').' ]长度不够',
+                'max_length' => '密码[ '.$this->input->post('password').' ]太长了'
+            )
+        );
+        if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
+            exit(json_encode(array('status' => false, 'error' => validation_errors())));
+        }
+
+        $this->load->model('Model_users', 'users', TRUE);
+        $salt = substr(uniqid(rand()), -6);
+        $password = md5(md5($this->input->post('password')).$salt);
+        $flag = $this->users->update_by_where(array('password' => $password, 'salt' => $salt), array('email' => $this->input->post('email')));
+        if ($flag) {
+            exit(json_encode(array('status' => true, 'content' => '修改成功')));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':修改失败');
+            exit(json_encode(array('status' => false, 'error' => '修改失败')));
         }
     }
 }
