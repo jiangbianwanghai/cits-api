@@ -82,20 +82,19 @@ class Notify extends CI_Controller {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户UID格式不正确');
             exit(json_encode(array('status' => false, 'error' => '用户UID格式不正确')));
         }
+        $limit = $this->input->get('limit');
+        $offset = $this->input->get('offset');
 
         //状态值格式验证
         $is_read = $this->input->get('is_read');
         $where = array('user' => $uid);
-        if ($is_read) {
-            if (!in_array($is_read, array(0, 1))) {
-                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':状态值格式不正确');
-                exit(json_encode(array('status' => false, 'error' => '状态值格式不正确')));
-            }
-            $where = array('user' => $uid, 'is_read' => $is_read);
+        if (in_array($is_read, array('y', 'n'))) {
+            $read_status = array('y' => '1', 'n' => '0');
+            $where = array('user' => $uid, 'is_read' => $read_status[$is_read]);
         }
 
         $this->load->model('Model_notify', 'notify', TRUE);
-        $rows = $this->notify->get_rows(array('id', 'is_read', 'user', 'log_id', 'add_time'), $where, array('id' => 'desc'), 10);
+        $rows = $this->notify->get_rows(array('id', 'is_read', 'user', 'log_id', 'add_time'), $where, array('id' => 'desc'), $limit, $offset);
         if ($rows['total']) {
             foreach ($rows['data'] as $key => $value) {
                 $ids[] = $value['log_id'];
@@ -114,6 +113,47 @@ class Notify extends CI_Controller {
         } else {
             log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':数据不存在，查询UID是[ '.$uid.' ]');
             exit(json_encode(array('status' => false, 'error' => '数据不存在')));
+        }
+    }
+
+    /**
+     * 更改是否阅读
+     */
+    public function change_read()
+    {
+        //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
+        //验证输入
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('id', '提醒id', 'trim|required|regex_match[/^\d+(,\d+)*$/]',
+            array(
+                'required' => '%s 不能为空',
+                'regex_match' => '提醒id[ '.$this->input->post('id').' ]不符合规则'
+            )
+        );
+        if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
+            exit(json_encode(array('status' => false, 'error' => validation_errors())));
+        }
+
+        $this->load->model('Model_notify', 'notify', TRUE);
+        $ids = explode(',', $this->input->post('id'));
+        $flag = $this->notify->update_by_where(array('is_read'=> '1'), $ids, true);
+        if ($flag) {
+            exit(json_encode(array('status' => true, 'content' => '操作成功')));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作失败');
+            exit(json_encode(array('status' => false, 'error' => '操作失败')));
         }
     }
 }

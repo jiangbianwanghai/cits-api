@@ -61,7 +61,7 @@ class MY_Model extends CI_Model {
                 $customDB->order_by($key, $value);
             }
         }
-        $this->db->limit($limit, $offset);
+        $customDB->limit($limit, $offset);
         $query = $customDB->get($this->table);
         $customDB->close();
         $rows['data'] = $query->result_array();
@@ -141,11 +141,17 @@ class MY_Model extends CI_Model {
      * @param  int $id   主键id
      * @return true|false
      */
-    public function update_by_where($data, $where)
+    public function update_by_where($data, $where, $in = false)
     {
         $result = false;
         $customDB = $this->load->database($this->dbgroup, TRUE);
-        $result = $customDB->update($this->table, $data, $where);
+        if ($in) {
+            $customDB->where_in($this->primary, $where);
+            $customDB->set($data);
+            $result = $customDB->update($this->table);
+        } else {
+            $result = $customDB->update($this->table, $data, $where);
+        }
         $customDB->close();
         return $result;
     }
