@@ -88,7 +88,7 @@ class Accept extends CI_Controller {
         );
         $id = $this->accept->add($Post_data);
         if ($id) {
-            exit(json_encode(array('status' => true, 'data' => $id)));
+            exit(json_encode(array('status' => true, 'content' => $id)));
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
             exit(json_encode(array('status' => false, 'error' => '写入错误')));
@@ -142,7 +142,7 @@ class Accept extends CI_Controller {
     }
 
     /**
-     * 根据任务id输出bug
+     * 根据任务id输出受理人员
      */
     public function get_rows_by_issue()
     {

@@ -78,7 +78,7 @@ class MY_Model extends CI_Model {
             $fieldStr = "`".implode("`,`", $field)."`";
         else
             $fieldStr = "*";
-        
+        $customDB->select($fieldStr);
         if (!$key)
             $key = $this->primary;
 
@@ -184,5 +184,13 @@ class MY_Model extends CI_Model {
     public function update_by_unique($data) {
         $customDB = $this->load->database($this->dbgroup, TRUE);
         return $customDB->replace($this->table, $data);
+    }
+
+    public function del($where)
+    {
+        $customDB = $this->load->database($this->dbgroup, TRUE);
+        $bool = $customDB->delete($this->table, $where);
+        $customDB->close();
+        return $bool;
     }
 }
