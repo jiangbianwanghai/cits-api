@@ -101,7 +101,7 @@ class Notify extends CI_Controller {
                 $ids[] = $value['log_id'];
             }
             $this->load->model('Model_logs', 'logs', TRUE);
-            $Log_rows = $this->logs->get_rows_by_ids($ids, array('id', 'sender', 'target_type', 'target', 'content', 'add_time'));
+            $Log_rows = $this->logs->get_rows_by_ids($ids, array('id', 'sender', 'target_type', 'target', 'subject', 'action', 'content', 'add_time'));
             if ($Log_rows) {
                 foreach ($Log_rows as $key => $value) {
                     $Log_rows_tmp[$value['id']] = $value;
