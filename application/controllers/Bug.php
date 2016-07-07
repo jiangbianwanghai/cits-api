@@ -206,8 +206,8 @@ class Bug extends CI_Controller {
         if ($bool) {
             exit(json_encode(array('status' => true, 'content' => $bool)));
         } else {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
-            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':删除失败');
+            exit(json_encode(array('status' => false, 'error' => '删除失败')));
         }
     }
 
