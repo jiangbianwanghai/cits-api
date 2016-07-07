@@ -375,7 +375,7 @@ class Bug extends CI_Controller {
         }
         $this->load->model('Model_bug', 'bug', TRUE);
         $result['data'] = $this->bug->get_rows_by_ids($ids, array('id', 'level', 'subject', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'state', 'status'));
-        if ($rows) {
+        if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $result)));
         } else {
             log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');

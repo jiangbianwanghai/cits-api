@@ -150,4 +150,120 @@ class Commit extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
         }
     }
+
+    /**
+     * 输出列表
+     *
+     * 跟进给定的条件输出列表
+     */
+    public function rows()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //如果有uid传值，则输出指定uid下的项目列表
+        $where = array();
+        $filter = $this->input->get('filter');
+        if ($filter) {
+            $filter_arr = explode('|', $filter);
+            if ($filter_arr) {
+                foreach ($filter_arr as $key => $value) {
+                    $tmp = explode(',', $value);
+                    $where[$tmp[0]] = $tmp[1];
+                }
+            }
+        }
+
+        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
+        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+
+        $this->load->model('Model_test', 'test', TRUE);
+        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'accept_user', 'accept_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);
+        if ($rows['total']) {
+            foreach ($rows['data'] as $key => $value) {
+                $ids[] = $value['issue_id'];
+            }
+            $this->load->model('Model_issue', 'issue', TRUE);
+            $Issue_rows = $this->issue->get_rows_by_ids($ids, array('id', 'issue_name'));
+            if ($Issue_rows) {
+                foreach ($Issue_rows as $key => $value) {
+                    $Issue_rows_tmp[$value['id']] = $value;
+                }
+            }
+            foreach ($rows['data'] as $key => $value) {
+                $rows['data'][$key]['issue'] = $Issue_rows_tmp[$value['issue_id']];
+            }
+            exit(json_encode(array('status' => true, 'content' => $rows)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
+
+    /**
+     * 关注列表
+     */
+    public function star()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $uid = $this->input->get('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
+        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+
+        $result = array('total' => 0, 'data' => array());
+        $this->load->model('Model_star', 'star', TRUE);
+        $rows = $this->star->get_rows(array('star_id'), array('add_user' => $uid, 'star_type' => '2'), array('id' => 'desc'), $limit, $offset);
+        $result['total'] = $rows['total'];
+        if ($rows['data']) {
+            foreach ($rows['data'] as $key => $value) {
+                $ids[] = $value['star_id'];
+            }
+        }
+        $this->load->model('Model_test', 'test', TRUE);
+        $result['data'] = $this->test->get_rows_by_ids($ids, array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'accept_user', 'accept_time', 'status'));
+        if ($rows['total']) {
+            foreach ($result['data'] as $key => $value) {
+                $ids[] = $value['issue_id'];
+            }
+            $this->load->model('Model_issue', 'issue', TRUE);
+            $Issue_rows = $this->issue->get_rows_by_ids($ids, array('id', 'issue_name'));
+            if ($Issue_rows) {
+                foreach ($Issue_rows as $key => $value) {
+                    $Issue_rows_tmp[$value['id']] = $value;
+                }
+            }
+            foreach ($result['data'] as $key => $value) {
+                $result['data'][$key]['issue'] = $Issue_rows_tmp[$value['issue_id']];
+            }
+            exit(json_encode(array('status' => true, 'content' => $result)));
+        } else {
+            log_message('debug', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
 }
