@@ -355,16 +355,35 @@ class Issue extends CI_Controller {
             }
         }
 
+        $ids = array();
+        $Id_string = $this->input->get('ids');
+        if ($Id_string) {
+            $idarr = explode(',', $Id_string);
+            foreach ($idarr as $key => $value) {
+                $ids[] = $value;
+            }
+        }
+
         $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
         $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_issue', 'issue', TRUE);
-        $rows = $this->issue->get_rows(array('id', 'project_id', 'plan_id', 'issue_name', 'type', 'level', 'url', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'workflow', 'status'), $where, array('id' => 'desc'), $limit, $offset);
-        if ($rows['total']) {
-            exit(json_encode(array('status' => true, 'content' => $rows)));
+        if ($ids) {
+            $rows = $this->issue->get_rows_by_ids($ids, array('id', 'issue_name'));
+            if ($rows) {
+                exit(json_encode(array('status' => true, 'content' => $rows)));
+            } else {
+                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+                exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+            }
         } else {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
-            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+            $rows = $this->issue->get_rows(array('id', 'project_id', 'plan_id', 'issue_name', 'type', 'level', 'url', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'workflow', 'status'), $where, array('id' => 'desc'), $limit, $offset);
+            if ($rows['total']) {
+                exit(json_encode(array('status' => true, 'content' => $rows)));
+            } else {
+                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+                exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+            }
         }
     }
 

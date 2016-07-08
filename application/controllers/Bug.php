@@ -329,7 +329,7 @@ class Bug extends CI_Controller {
         $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_bug', 'bug', TRUE);
-        $rows = $this->bug->get_rows(array('id', 'level', 'subject', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'state', 'status'), $where, array('id' => 'desc'), $limit, $offset);
+        $rows = $this->bug->get_rows(array('id', 'issue_id', 'plan_id', 'project_id', 'level', 'subject', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'state', 'status'), $where, array('id' => 'desc'), $limit, $offset);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
