@@ -158,4 +158,49 @@ class Plan extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
         }
     }
+
+    /**
+     * 输出列表
+     *
+     * 跟进给定的条件输出列表
+     */
+    public function rows()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //如果有uid传值，则输出指定uid下的项目列表
+        $where = array();
+        $filter = $this->input->get('filter');
+        if ($filter) {
+            $filter_arr = explode('|', $filter);
+            if ($filter_arr) {
+                foreach ($filter_arr as $key => $value) {
+                    $tmp = explode(',', $value);
+                    $where[$tmp[0]] = $tmp[1];
+                }
+            }
+        }
+
+        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
+        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+
+        $this->load->model('Model_plan', 'plan', TRUE);
+        $rows = $this->plan->get_rows(array('id', 'project_id', 'plan_name', 'plan_discription', 'startime', 'endtime', 'add_user', 'add_time', 'last_user', 'last_time', 'state', 'status', 'timeline'), $where, array('id' => 'desc'), $limit, $offset);
+        if ($rows['total']) {
+            exit(json_encode(array('status' => true, 'content' => $rows)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
 }

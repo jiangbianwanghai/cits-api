@@ -359,7 +359,7 @@ class Issue extends CI_Controller {
         $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_issue', 'issue', TRUE);
-        $rows = $this->issue->get_rows(array('id', 'issue_name', 'type', 'level', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'workflow', 'status'), $where, array('id' => 'desc'), $limit, $offset);
+        $rows = $this->issue->get_rows(array('id', 'project_id', 'plan_id', 'issue_name', 'type', 'level', 'url', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'workflow', 'status'), $where, array('id' => 'desc'), $limit, $offset);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
