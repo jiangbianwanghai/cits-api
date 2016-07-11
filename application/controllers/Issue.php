@@ -364,8 +364,8 @@ class Issue extends CI_Controller {
             }
         }
 
-        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
-        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? $this->input->get('limit') : '20';
+        $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         $this->load->model('Model_issue', 'issue', TRUE);
         if ($ids) {

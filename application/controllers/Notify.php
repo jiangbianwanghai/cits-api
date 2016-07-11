@@ -83,8 +83,8 @@ class Notify extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '用户UID格式不正确')));
         }
         
-        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
-        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? $this->input->get('limit') : '20';
+        $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         //状态值格式验证
         $is_read = $this->input->get('is_read');

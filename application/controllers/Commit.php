@@ -183,8 +183,8 @@ class Commit extends CI_Controller {
             }
         }
 
-        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
-        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? $this->input->get('limit') : '20';
+        $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         $this->load->model('Model_test', 'test', TRUE);
         $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'accept_user', 'accept_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);

@@ -325,8 +325,8 @@ class Bug extends CI_Controller {
             }
         }
 
-        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
-        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? $this->input->get('limit') : '20';
+        $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         $this->load->model('Model_bug', 'bug', TRUE);
         $rows = $this->bug->get_rows(array('id', 'issue_id', 'plan_id', 'project_id', 'level', 'subject', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'state', 'status'), $where, array('id' => 'desc'), $limit, $offset);
