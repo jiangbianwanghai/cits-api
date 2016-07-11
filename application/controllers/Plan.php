@@ -200,8 +200,8 @@ class Plan extends CI_Controller {
             }
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_plan', 'plan', TRUE);
         if ($ids) {

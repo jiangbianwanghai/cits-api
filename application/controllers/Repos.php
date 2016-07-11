@@ -235,8 +235,8 @@ class Repos extends CI_Controller {
             }
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_repos', 'repos', TRUE);
         $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url', 'repos_summary', 'merge', 'add_user', 'add_time', 'last_user', 'last_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);

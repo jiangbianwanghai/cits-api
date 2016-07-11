@@ -183,8 +183,8 @@ class Commit extends CI_Controller {
             }
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_test', 'test', TRUE);
         $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'accept_user', 'accept_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);
@@ -232,8 +232,8 @@ class Commit extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $result = array('total' => 0, 'data' => array());
         $this->load->model('Model_star', 'star', TRUE);

@@ -42,8 +42,8 @@ class Env extends CI_Controller {
             }
         }
 
-        $limit = empty($this->input->get('limit')) ? '500' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '500' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_env', 'env', TRUE);
         if ($ids) {

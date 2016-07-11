@@ -325,8 +325,8 @@ class Bug extends CI_Controller {
             }
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_bug', 'bug', TRUE);
         $rows = $this->bug->get_rows(array('id', 'issue_id', 'plan_id', 'project_id', 'level', 'subject', 'add_user', 'add_time', 'accept_user', 'accept_time', 'last_user', 'last_time', 'state', 'status'), $where, array('id' => 'desc'), $limit, $offset);
@@ -361,8 +361,8 @@ class Bug extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $result = array('total' => 0, 'data' => array());
         $this->load->model('Model_star', 'star', TRUE);

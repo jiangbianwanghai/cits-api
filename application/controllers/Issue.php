@@ -364,8 +364,8 @@ class Issue extends CI_Controller {
             }
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $this->load->model('Model_issue', 'issue', TRUE);
         if ($ids) {
@@ -410,8 +410,8 @@ class Issue extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
         }
 
-        $limit = empty($this->input->get('limit')) ? '20' : $this->input->get('limit');
-        $offset = empty($this->input->get('offset')) ? '0' : $this->input->get('offset');
+        $limit = $this->input->get('limit') ? '20' : $this->input->get('limit');
+        $offset = $this->input->get('offset') ? '0' : $this->input->get('offset');
 
         $result = array('total' => 0, 'data' => array());
         $this->load->model('Model_star', 'star', TRUE);
