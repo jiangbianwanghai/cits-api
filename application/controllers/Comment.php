@@ -121,12 +121,12 @@ class Comment extends CI_Controller {
         
         if ($type == 'issue') {
             $this->load->model('Model_issue_comment', 'comment', TRUE);
-            $where = array('issue_id' => $id);
+            $where = array('issue_id' => $id, 'status' => '1');
         }
 
         if ($type == 'bug') {
             $this->load->model('Model_bug_comment', 'comment', TRUE);
-            $where = array('bug_id' => $id);
+            $where = array('bug_id' => $id, 'status' => '1');
         }
         
         $rows = $this->comment->get_rows(array('id', 'content', 'add_user', 'add_time'), $where, array('id' => 'asc'), 100);
@@ -135,6 +135,107 @@ class Comment extends CI_Controller {
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
+
+    /**
+     * 根据bug id输出bug详情
+     */
+    public function profile()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //任务id格式验证
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':任务ID[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '任务id格式错误')));
+        }
+
+        $type = $this->input->get('type');
+        if (!in_array($type, array('issue', 'bug'))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':表类型[ '.$type.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '表类型格式错误')));
+        }
+
+        if ($type == 'issue') {
+            $this->load->model('Model_issue_comment', 'comment', TRUE);
+        }
+
+        if ($type == 'bug') {
+            $this->load->model('Model_bug_comment', 'comment', TRUE);
+        }
+
+        $row = $this->comment->fetchOne(array(), array('id' => $id));
+        if ($row) {
+            exit(json_encode(array('status' => true, 'content' => $row)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
+
+    /**
+     * 删除
+     */
+    public function del()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //任务id格式验证
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':bug id[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => 'bug id格式错误')));
+        }
+
+        //任务id格式验证
+        $user = $this->input->get('user');
+        if (!($user != 0 && ctype_digit($user))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户 id[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '用户 id格式错误')));
+        }
+
+        $type = $this->input->get('type');
+        if (!in_array($type, array('issue', 'bug'))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':表类型[ '.$type.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '表类型格式错误')));
+        }
+
+        if ($type == 'issue') {
+            $this->load->model('Model_issue_comment', 'comment', TRUE);
+        }
+
+        if ($type == 'bug') {
+            $this->load->model('Model_bug_comment', 'comment', TRUE);
+        }
+
+        $bool = $this->comment->update_by_where(array('status' => '-1', 'last_user' => $user, 'last_time' => time()), array('id' => $id));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':删除失败');
+            exit(json_encode(array('status' => false, 'error' => '删除失败')));
         }
     }
 }
