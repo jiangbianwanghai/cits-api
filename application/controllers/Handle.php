@@ -141,7 +141,7 @@ class Handle extends CI_Controller {
 
 
         $this->load->model('Model_logs', 'logs', TRUE);
-        $rows = $this->logs->get_rows(array('id', 'sender', 'action', 'target_type', 'target', 'subject', 'content', 'add_time'), array('target_type' => 3, 'target' => $id), array('id' => 'asc'), 10);
+        $rows = $this->logs->get_rows(array('id', 'sender', 'action', 'target_type', 'target', 'subject', 'content', 'add_time'), array('target' => $id), array('id' => 'asc'), 50);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {

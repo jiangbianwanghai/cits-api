@@ -384,6 +384,244 @@ class Bug extends CI_Controller {
     }
 
     /**
+     * 更改受理人
+     */
+    public function change_accept()
+    {
+        //验证请求的方式
+        if ($_GET) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受POST传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受POST传值')));
+        }
+
+        //POST传值不能为空
+        if (empty($_POST)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写POST数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写POST数据')));
+        }
+
+        //验证输入
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('id', 'bug ID', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => 'bug ID[ '.$this->input->post('id').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('accept_user', '受理人', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '受理人[ '.$this->input->post('accept_user').' ]不符合规则',
+            )
+        );
+        $this->form_validation->set_rules('last_user', '操作人', 'trim|required|is_natural_no_zero',
+            array(
+                'required' => '%s 不能为空',
+                'is_natural_no_zero' => '操作人[ '.$this->input->post('last_user').' ]不符合规则',
+            )
+        );
+        if ($this->form_validation->run() == FALSE) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':'.validation_errors());
+            exit(json_encode(array('status' => false, 'error' => validation_errors())));
+        }
+
+        //写入数据
+        $this->load->model('Model_bug', 'bug', TRUE);
+        $Post_data = array(
+            'accept_user' => $this->input->post('accept_user'),
+            'accept_time' => time(),
+            'last_user' => $this->input->post('last_user'),
+            'last_time' => time(),
+        );
+        $bool = $this->bug->update_by_where($Post_data, array('id' => $this->input->post('id')));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    public function checkout()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':bug id[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => 'bug id格式错误')));
+        }
+
+        $uid = $this->input->get('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        //写入数据
+        $this->load->model('Model_bug', 'bug', TRUE);
+        $Post_data = array(
+            'state' => '-1',
+            'status' => '0',
+            'check_time' => time(),
+            'last_user' => $uid,
+            'last_time' => time(),
+        );
+        $bool = $this->bug->update_by_where($Post_data, array('id' => $id));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    public function checkin()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':bug id[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => 'bug id格式错误')));
+        }
+
+        $uid = $this->input->get('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        $level = $this->input->get('level');
+        if (!in_array($level, array('1','2','3','4'))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':严重级别[ '.$level.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '严重级别格式错误')));
+        }
+
+        //写入数据
+        $this->load->model('Model_bug', 'bug', TRUE);
+        $Post_data = array(
+            'level' => $level,
+            'state' => '1',
+            'check_time' => time(),
+            'last_user' => $uid,
+            'last_time' => time(),
+        );
+        $bool = $this->bug->update_by_where($Post_data, array('id' => $id));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    public function over()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':bug id[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => 'bug id格式错误')));
+        }
+
+        $uid = $this->input->get('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        //写入数据
+        $this->load->model('Model_bug', 'bug', TRUE);
+        $Post_data = array(
+            'state' => '3',
+            'last_user' => $uid,
+            'last_time' => time(),
+        );
+        $bool = $this->bug->update_by_where($Post_data, array('id' => $id));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    public function returnbug()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':bug id[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => 'bug id格式错误')));
+        }
+
+        $uid = $this->input->get('uid');
+        if (!($uid != 0 && ctype_digit($uid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户ID[ '.$uid.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '用户ID格式错误')));
+        }
+
+        //写入数据
+        $this->load->model('Model_bug', 'bug', TRUE);
+        $Post_data = array(
+            'state' => '5',
+            'status' => '0',
+            'last_user' => $uid,
+            'last_time' => time(),
+        );
+        $bool = $this->bug->update_by_where($Post_data, array('id' => $id));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    /**
      * 验证bug名称是否重复
      *
      * 同一个计划下的bug名称不能重复
