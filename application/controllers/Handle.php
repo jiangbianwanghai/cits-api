@@ -134,14 +134,27 @@ class Handle extends CI_Controller {
 
         //id格式验证
         $id = $this->input->get('id');
-        if (!($id != 0 && ctype_digit($id))) {
+        if ($id && !ctype_digit($id)) {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':任务id格式不正确');
             exit(json_encode(array('status' => false, 'error' => '任务id格式不正确')));
+        } else {
+            $where = array('target' => $id);
         }
 
+        //id格式验证
+        $uid = $this->input->get('uid');
+        if ($uid && !ctype_digit($uid)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户id格式不正确');
+            exit(json_encode(array('status' => false, 'error' => '用户id格式不正确')));
+        } else {
+            $where = array('sender' => $uid);
+        }
+
+        $limit = $this->input->get('limit') ? $this->input->get('limit') : '20';
+        $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         $this->load->model('Model_logs', 'logs', TRUE);
-        $rows = $this->logs->get_rows(array('id', 'sender', 'action', 'target_type', 'target', 'subject', 'content', 'add_time'), array('target' => $id), array('id' => 'asc'), 50);
+        $rows = $this->logs->get_rows(array('id', 'sender', 'action', 'target_type', 'target', 'subject', 'content', 'add_time'), $where, array('id' => 'desc'), $limit, $offset);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
