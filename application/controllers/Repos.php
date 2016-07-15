@@ -195,7 +195,7 @@ class Repos extends CI_Controller {
         }
 
         $this->load->model('Model_repos', 'repos', TRUE);
-        $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url', 'merge'), array('status' => 1), array('id' => 'desc'), 100);
+        $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url', 'merge', 'type'), array('status' => 1), array('id' => 'desc'), 100);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
@@ -239,7 +239,7 @@ class Repos extends CI_Controller {
         $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         $this->load->model('Model_repos', 'repos', TRUE);
-        $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url', 'repos_summary', 'merge', 'add_user', 'add_time', 'last_user', 'last_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);
+        $rows = $this->repos->get_rows(array('id', 'repos_name', 'repos_name_other', 'repos_url', 'repos_summary', 'merge', 'add_user', 'add_time', 'last_user', 'last_time', 'status', 'type'), $where, array('id' => 'desc'), $limit, $offset);
         if ($rows['total']) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
