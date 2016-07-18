@@ -134,20 +134,30 @@ class Handle extends CI_Controller {
 
         //id格式验证
         $id = $this->input->get('id');
-        if ($id && !ctype_digit($id)) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':任务id格式不正确');
-            exit(json_encode(array('status' => false, 'error' => '任务id格式不正确')));
-        } else {
-            $where = array('target' => $id);
+        $type = $this->input->get('type');
+        if ($id && $type) {
+            if (!ctype_digit($id)) {
+                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作目标id格式不正确');
+                exit(json_encode(array('status' => false, 'error' => '操作目标id格式不正确')));
+            }
+
+            if (!in_array($type, array('project', 'plan', 'issue', 'test', 'bug'))) {
+                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':类型格式不正确');
+                exit(json_encode(array('status' => false, 'error' => '类型格式不正确')));
+            }
+            $type_arr = array('project' => '1', 'plan' => '2', 'issue' => '3', 'test' => '4', 'bug' => '5');
+            $where = array('target' => $id, 'target_type' => $type_arr[$type]);
         }
 
         //id格式验证
         $uid = $this->input->get('uid');
-        if ($uid && !ctype_digit($uid)) {
-            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户id格式不正确');
-            exit(json_encode(array('status' => false, 'error' => '用户id格式不正确')));
-        } else {
-            $where = array('sender' => $uid);
+        if ($uid) {
+            if (!ctype_digit($uid)) {
+                log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':用户id格式不正确');
+                exit(json_encode(array('status' => false, 'error' => '用户id格式不正确')));
+            } else {
+                $where = array('sender' => $uid);
+            }
         }
 
         $limit = $this->input->get('limit') ? $this->input->get('limit') : '20';
