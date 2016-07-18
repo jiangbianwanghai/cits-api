@@ -249,7 +249,46 @@ class Plan extends CI_Controller {
 
         //读取计划中的任务
         $this->load->model('Model_issue', 'issue', TRUE);
-        
+        $rows = $this->issue->get_rows(array('id'), array('status' => 1, 'workflow' => 7), array(), 100);
 
+        //循环计算每个任务的提测率
+        $rateArr = array();
+        $this->load->model('Model_test', 'test', TRUE);
+        //组合issue ID
+        $issueIdArr = array();
+        if ($rows['data']) {
+            foreach ($rows['data'] as $key => $val) {
+                $issueIdArr[] = $val['id'];
+            }
+        }
+        $testRows = $this->test->get_rows_by_ids($issueIdArr, array('issue_id', 'repos_id'));
+        $maxTest = 0;
+        $testIdArr = array();
+        //计算每个任务的提测成功率
+        if ($testRows) {
+            foreach ($testRows as $key => $value) {
+                if (isset($testIdArr[$value['issue_id']][$value['repos_id']])) {
+                    $testIdArr[$value['issue_id']][$value['repos_id']] += 1;
+                } else {
+                    $testIdArr[$value['issue_id']][$value['repos_id']] = 1;
+                }
+            }
+            if ($testIdArr) {
+                foreach ($testIdArr as $key => $value) {
+                    $rateArr[$key] = 1/max($value);
+                }
+            }
+        }
+
+        //输出整个计划的提测率
+        if ($rateArr) {
+            $rateTotal = 0;
+            foreach ($rateArr as $key => $value) {
+                $rateTotal += $value;
+            }
+            echo sprintf("%.2f", $rateTotal/count($rateArr));
+        } else {
+            echo '无提测数据用于计算';
+        }
     }
 }
