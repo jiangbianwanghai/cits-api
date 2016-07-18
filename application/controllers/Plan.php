@@ -286,9 +286,9 @@ class Plan extends CI_Controller {
             foreach ($rateArr as $key => $value) {
                 $rateTotal += $value;
             }
-            echo sprintf("%.2f", $rateTotal/count($rateArr));
+            exit(json_encode(array('status' => true, 'content' => sprintf("%.2f", $rateTotal/count($rateArr)))));
         } else {
-            echo '无提测数据用于计算';
+            exit(json_encode(array('status' => true, 'content' => '无提测数据用于计算')));
         }
     }
 }
