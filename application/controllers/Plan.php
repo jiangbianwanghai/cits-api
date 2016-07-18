@@ -222,4 +222,34 @@ class Plan extends CI_Controller {
             }
         }
     }
+
+    /**
+     * 提测成功率计算
+     */
+    public function rate()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //计划id格式验证
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':计划ID[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '计划id格式错误')));
+        }
+
+        //读取计划中的任务
+        $this->load->model('Model_issue', 'issue', TRUE);
+        
+
+    }
 }
