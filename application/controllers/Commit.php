@@ -142,7 +142,7 @@ class Commit extends CI_Controller {
         }
 
         $this->load->model('Model_test', 'test', TRUE);
-        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'status'), array('issue_id' => $id), array('repos_id,id' => 'desc'), 100);
+        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'env', 'add_user', 'add_time', 'status'), array('issue_id' => $id), array('repos_id,id' => 'desc'), 100);
         if ($rows) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
@@ -187,7 +187,7 @@ class Commit extends CI_Controller {
         $offset = $this->input->get('offset') ? $this->input->get('offset') : '0';
 
         $this->load->model('Model_test', 'test', TRUE);
-        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'accept_user', 'accept_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);
+        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'env', 'add_user', 'add_time', 'accept_user', 'accept_time', 'status'), $where, array('id' => 'desc'), $limit, $offset);
         if ($rows['total']) {
             foreach ($rows['data'] as $key => $value) {
                 $ids[] = $value['issue_id'];
@@ -298,6 +298,64 @@ class Commit extends CI_Controller {
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
+
+    /**
+     * 测试占用
+     */
+    public function zhanyong()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //任务id格式验证
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':提测记录ID[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '提测记录id格式错误')));
+        }
+
+        $user = $this->input->get('user');
+        if (!($user != 0 && ctype_digit($user))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作用户id[ '.$user.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '操作用户id格式错误')));
+        }
+
+        $env = $this->input->get('env');
+        if (!($env != 0 && ctype_digit($env))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':环境ID[ '.$env.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '环境ID格式错误')));
+        }
+
+        //写入数据
+        $this->load->model('Model_test', 'test', TRUE);
+        $Post_data = array(
+            'state' => 1,
+            'rank' => 1,
+            'tice' => 1,
+            'tice_time' => time(),
+            'env' => $env,
+            'accept_user' => $user,
+            'accept_time' => time(),
+            'last_user' => $user,
+            'last_time' => time(),
+        );
+        $bool = $this->test->update_by_where($Post_data, array('id' => $this->input->get('id')));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
 }
