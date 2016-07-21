@@ -220,8 +220,19 @@ class Issue extends CI_Controller {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':查询偏移量格式错误');
             exit(json_encode(array('status' => false, 'error' => '查询偏移量格式错误')));
         }
+        $where = array('project_id' => $projectid, 'plan_id' => $planid, 'status >=' => 0);
+        $filter = $this->input->get('filter');
+        if ($filter) {
+            $filter_arr = explode('|', $filter);
+            if ($filter_arr) {
+                foreach ($filter_arr as $key => $value) {
+                    $tmp = explode(',', $value);
+                    $where[$tmp[0]] = $tmp[1];
+                }
+            }
+        }
         $this->load->model('Model_issue', 'issue', TRUE);
-        $rows = $this->issue->get_rows(array('id', 'type', 'level', 'issue_name', 'add_user', 'add_time', 'accept_user', 'accept_time', 'workflow', 'status'), array('project_id' => $projectid, 'plan_id' => $planid, 'status' => 1), array('id' => 'desc'), 20, $offset);
+        $rows = $this->issue->get_rows(array('id', 'type', 'level', 'issue_name', 'add_user', 'add_time', 'accept_user', 'accept_time', 'workflow', 'status'), $where, array('id' => 'desc'), 20, $offset);
         if ($rows) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {

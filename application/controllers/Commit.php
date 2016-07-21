@@ -142,7 +142,7 @@ class Commit extends CI_Controller {
         }
 
         $this->load->model('Model_test', 'test', TRUE);
-        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'add_user', 'add_time', 'status'), array('issue_id' => $id), array('repos_id,id' => 'desc'), 100);
+        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'env', 'add_user', 'add_time', 'status'), array('issue_id' => $id), array('repos_id,id' => 'desc'), 100);
         if ($rows) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
