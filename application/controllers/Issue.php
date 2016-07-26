@@ -325,6 +325,10 @@ class Issue extends CI_Controller {
             'last_user' => $this->input->post('uid'),
             'last_time' => time(),
         );
+        //上线后此任务就关闭了
+        if ($this->input->post('flow') == '7') {
+            $Post_data['status'] = 0;
+        }
         $bool = $this->issue->update_by_where($Post_data, array('id' => $this->input->post('id')));
         if ($bool) {
             exit(json_encode(array('status' => true, 'content' => $bool)));
