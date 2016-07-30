@@ -96,6 +96,7 @@ class Repos extends CI_Controller {
             'merge' => $this->input->post('merge'),
             'add_user' => $this->input->post('add_user'),
             'add_time' => time(),
+            'type' => $this->input->post('type')
         );
         $id = $this->repos->add($Post_data);
         if ($id) {
