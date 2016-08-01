@@ -358,4 +358,96 @@ class Commit extends CI_Controller {
             exit(json_encode(array('status' => false, 'error' => '写入错误')));
         }
     }
+
+    /**
+     * 修改提测记录
+     */
+    public function change_tice()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':提测记录ID[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '提测记录id格式错误')));
+        }
+
+        $user = $this->input->get('user');
+        if (!($user != 0 && ctype_digit($user))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作用户id[ '.$user.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '操作用户id格式错误')));
+        }
+
+        $tice = $this->input->get('tice');
+
+        //写入数据
+        $this->load->model('Model_test', 'test', TRUE);
+        if ($tice == 'online') {
+            $Post_data = array('tice' => 7, 'state' => 3, 'rank' => 2, 'last_user' => $user, 'last_time' => time());
+        }
+        if ($tice == 'wait') {
+            $Post_data = array('tice' => 0, 'state' => 0, 'rank' => 0, 'env' => 0, 'last_user' => $user, 'last_time' => time());
+        }
+        if ($tice == 'pass') {
+            $Post_data = array('tice' => 1, 'state' => '-3', 'rank' => 0, 'last_user' => $user, 'last_time' => time());
+        }
+        if ($tice == 'launch') {
+            $Post_data = array('tice' => 1, 'state' => 3, 'rank' => 1, 'last_user' => $user, 'last_time' => time());
+        }
+        
+        $bool = $this->test->update_by_where($Post_data, array('id' => $this->input->get('id')));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':写入错误');
+            exit(json_encode(array('status' => false, 'error' => '写入错误')));
+        }
+    }
+
+    public function check_free()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        $env = $this->input->get('env');
+        if (!($env != 0 && ctype_digit($env))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':测试环境[ '.$env.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '测试环境格式错误')));
+        }
+
+        $reposid = $this->input->get('reposid');
+        if (!($reposid != 0 && ctype_digit($reposid))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':代码库id[ '.$reposid.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '代码库id格式错误')));
+        }
+
+        $this->load->model('Model_test', 'test', TRUE);
+
+        $row = $this->test->fetchOne(array(), array('repos_id' => $reposid, 'state' => 1, 'tice' => 1, 'env' => $env, 'status' => 1));
+        if ($row) {
+            exit(json_encode(array('status' => true, 'content' => $row)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
+            exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
 }
