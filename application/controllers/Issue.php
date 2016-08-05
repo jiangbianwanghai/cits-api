@@ -448,7 +448,7 @@ class Issue extends CI_Controller {
     }
 
     /**
-     * 
+     * 软删除
      */
     public function del()
     {

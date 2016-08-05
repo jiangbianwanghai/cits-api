@@ -142,7 +142,7 @@ class Commit extends CI_Controller {
         }
 
         $this->load->model('Model_test', 'test', TRUE);
-        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'env', 'add_user', 'add_time', 'status'), array('issue_id' => $id), array('repos_id,id' => 'desc'), 100);
+        $rows = $this->test->get_rows(array('id', 'project_id', 'plan_id', 'issue_id', 'repos_id', 'br', 'test_flag', 'trunk_flag', 'test_summary', 'state', 'rank', 'tice', 'tice_time', 'env', 'add_user', 'add_time', 'status'), array('issue_id' => $id, 'status' => '1'), array('repos_id,id' => 'desc'), 100);
         if ($rows) {
             exit(json_encode(array('status' => true, 'content' => $rows)));
         } else {
@@ -448,6 +448,47 @@ class Commit extends CI_Controller {
         } else {
             log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':记录不存在');
             exit(json_encode(array('status' => false, 'error' => '记录不存在')));
+        }
+    }
+
+    /**
+     * 软删除
+     */
+    public function del()
+    {
+        //验证请求的方式
+        if ($_POST) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':本接口只接受GET传值');
+            exit(json_encode(array('status' => false, 'error' => '本接口只接受GET传值')));
+        }
+
+        //GET传值不能为空
+        if (empty($_GET)) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':请填写GET数据');
+            exit(json_encode(array('status' => false, 'error' => '请填写GET数据')));
+        }
+
+        //任务id格式验证
+        $id = $this->input->get('id');
+        if (!($id != 0 && ctype_digit($id))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':任务ID[ '.$id.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '任务id格式错误')));
+        }
+
+        $user = $this->input->get('user');
+        if (!($user != 0 && ctype_digit($user))) {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作用户id[ '.$user.' ]格式错误');
+            exit(json_encode(array('status' => false, 'error' => '操作用户id格式错误')));
+        }
+
+        $this->load->model('Model_test', 'test', TRUE);
+        $Post_data = array('status' => '-1', 'last_user' => $user, 'last_time' => time());
+        $bool = $this->test->update_by_where($Post_data, array('id' => $id));
+        if ($bool) {
+            exit(json_encode(array('status' => true, 'content' => $bool)));
+        } else {
+            log_message('error', $this->router->fetch_class().'/'.$this->router->fetch_method().':操作失败');
+            exit(json_encode(array('status' => false, 'error' => '操作失败')));
         }
     }
 }
